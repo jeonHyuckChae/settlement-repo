@@ -1,0 +1,53 @@
+# Python 바이트코드와 캐시
+__pycache__/
+*.py[cod]
+
+# 가상환경
+.venv/
+venv/
+env/
+ENV/
+
+# 테스트, 코드 검사 및 커버리지 결과
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+junit.xml
+
+# Python 패키지 빌드 결과
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# 로컬 환경변수와 인증 정보 (예제 설정은 Git에 포함)
+.env
+.env.*
+!.env.example
+!.env.sample
+.aws/
+*.pem
+*.key
+
+# 로그와 로컬 데이터베이스
+*.log
+*.sqlite
+*.sqlite3
+
+# 편집기 개인 설정과 임시 파일
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 운영체제에서 생성하는 파일
+.DS_Store
+Thumbs.db
+Desktop.ini
