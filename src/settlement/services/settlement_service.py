@@ -27,18 +27,18 @@
 """
 
 # ── 표준 라이브러리 임포트 ────────────────────────────────────────────
-import logging          # 로그 출력
-import uuid             # 정산 ID 생성용 고유값
+import logging  # 로그 출력
+import uuid  # 정산 ID 생성용 고유값
 from datetime import datetime, timezone  # 처리 시각 기록
-from decimal import Decimal             # 금액 정밀 계산 (float 사용 시 0.1+0.2≠0.3 문제 발생)
-from typing import List, Optional       # 타입 힌트
+from decimal import Decimal  # 금액 정밀 계산 (float 사용 시 0.1+0.2≠0.3 문제 발생)
+from typing import List, Optional  # 타입 힌트
 
 # ── 내부 모듈 임포트 ─────────────────────────────────────────────────
 from settlement.models.models import (
-    Order,              # 주문 데이터 클래스
-    OrderStatus,        # 주문 상태 Enum: PENDING, COMPLETED, CANCELLED, REFUNDED
-    SettlementRecord,   # 정산 레코드 데이터 클래스
-    SettlementStatus,   # 정산 상태 Enum: PENDING, PROCESSING, COMPLETED, FAILED
+    Order,  # 주문 데이터 클래스
+    OrderStatus,  # 주문 상태 Enum: PENDING, COMPLETED, CANCELLED, REFUNDED
+    SettlementRecord,  # 정산 레코드 데이터 클래스
+    SettlementStatus,  # 정산 상태 Enum: PENDING, PROCESSING, COMPLETED, FAILED
 )
 
 # 이 모듈 전용 로거 생성
@@ -230,17 +230,20 @@ class SettlementService:
         """
         logger.info(
             "정산 계산 시작 | merchant=%s, %s ~ %s",
-            merchant_id, period_start, period_end,
+            merchant_id,
+            period_start,
+            period_end,
         )
 
         # ── 정산 대상 주문 필터링 ─────────────────────────────────────
         # 리스트 컴프리헨션으로 4가지 조건을 동시에 검사
         target = [
-            o for o in self._orders
+            o
+            for o in self._orders
             if (
-                o.merchant_id == merchant_id           # ① 판매자 일치
+                o.merchant_id == merchant_id  # ① 판매자 일치
                 and o.status == OrderStatus.COMPLETED  # ② 완료 상태
-                and o.completed_at is not None         # ③ 완료 시각 존재
+                and o.completed_at is not None  # ③ 완료 시각 존재
                 and period_start <= o.completed_at <= period_end  # ④ 기간 내
             )
         ]
@@ -250,8 +253,8 @@ class SettlementService:
         # sum()의 두 번째 인수 Decimal("0"): 초기값 (빈 목록일 때 0 반환)
         # o.amount    : 주문 금액 (models.py의 Order.amount)
         # o.fee_amount: 수수료 (models.py의 @property로 자동 계산)
-        total_sales = sum((o.amount for o in target),     Decimal("0"))
-        total_fee   = sum((o.fee_amount for o in target), Decimal("0"))
+        total_sales = sum((o.amount for o in target), Decimal("0"))
+        total_fee = sum((o.fee_amount for o in target), Decimal("0"))
 
         # 순 정산액: 판매자가 실제로 받는 금액
         net_amount = total_sales - total_fee
@@ -268,7 +271,7 @@ class SettlementService:
             total_sales=total_sales,
             total_fee=total_fee,
             net_amount=net_amount,
-            order_count=len(target),          # 정산 대상 주문 건수
+            order_count=len(target),  # 정산 대상 주문 건수
             status=SettlementStatus.PENDING,  # 초기 상태: 처리 대기
         )
 
@@ -277,8 +280,11 @@ class SettlementService:
 
         logger.info(
             "정산 레코드 생성 | id=%s 건수=%d 매출=%s 수수료=%s 정산액=%s",
-            record.settlement_id, len(target),
-            total_sales, total_fee, net_amount,
+            record.settlement_id,
+            len(target),
+            total_sales,
+            total_fee,
+            net_amount,
         )
 
         return record

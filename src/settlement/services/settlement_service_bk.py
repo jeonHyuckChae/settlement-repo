@@ -230,17 +230,20 @@ class SettlementService:
         """
         logger.info(
             "정산 계산 시작 | merchant=%s, %s ~ %s",
-            merchant_id, period_start, period_end,
+            merchant_id,
+            period_start,
+            period_end,
         )
 
         # ── 정산 대상 주문 필터링 ─────────────────────────────────────
         # 리스트 컴프리헨션으로 4가지 조건을 동시에 검사
         target = [
-            o for o in self._orders
+            o
+            for o in self._orders
             if (
-                o.merchant_id == merchant_id           # ① 판매자 일치
+                o.merchant_id == merchant_id  # ① 판매자 일치
                 and o.status == OrderStatus.COMPLETED  # ② 완료 상태
-                and o.completed_at is not None         # ③ 완료 시각 존재
+                and o.completed_at is not None  # ③ 완료 시각 존재
                 and period_start <= o.completed_at <= period_end  # ④ 기간 내
             )
         ]
@@ -250,8 +253,8 @@ class SettlementService:
         # sum()의 두 번째 인수 Decimal("0"): 초기값 (빈 목록일 때 0 반환)
         # o.amount    : 주문 금액 (models.py의 Order.amount)
         # o.fee_amount: 수수료 (models.py의 @property로 자동 계산)
-        total_sales = sum((o.amount for o in target),     Decimal("0"))
-        total_fee   = sum((o.fee_amount for o in target), Decimal("0"))
+        total_sales = sum((o.amount for o in target), Decimal("0"))
+        total_fee = sum((o.fee_amount for o in target), Decimal("0"))
 
         # 순 정산액: 판매자가 실제로 받는 금액
         net_amount = total_sales - total_fee
@@ -268,7 +271,7 @@ class SettlementService:
             total_sales=total_sales,
             total_fee=total_fee,
             net_amount=net_amount,
-            order_count=len(target),          # 정산 대상 주문 건수
+            order_count=len(target),  # 정산 대상 주문 건수
             status=SettlementStatus.PENDING,  # 초기 상태: 처리 대기
         )
 
@@ -277,8 +280,11 @@ class SettlementService:
 
         logger.info(
             "정산 레코드 생성 | id=%s 건수=%d 매출=%s 수수료=%s 정산액=%s",
-            record.settlement_id, len(target),
-            total_sales, total_fee, net_amount,
+            record.settlement_id,
+            len(target),
+            total_sales,
+            total_fee,
+            net_amount,
         )
 
         return record
@@ -339,7 +345,7 @@ class SettlementService:
 
             # ── 처리 완료: PROCESSING → COMPLETED ───────────────────
             record.status = SettlementStatus.COMPLETED
-            record.processed_at = datetime.utcnow()   # 완료 시각 기록
+            record.processed_at = datetime.utcnow()  # 완료 시각 기록
             logger.info("정산 처리 완료 | id=%s", settlement_id)
 
         except Exception as exc:

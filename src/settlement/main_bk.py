@@ -66,7 +66,7 @@ from settlement.services.settlement_service import SettlementService
 # format: 시간 | 레벨 | 모듈명 - 메시지 형태로 출력
 # 예: 2026-06-30 10:00:00,000 INFO settlement.main - 정산 시스템 기동 완료
 logging.basicConfig(
-    level=logging.INFO,                                     # INFO 이상 레벨만 출력 (DEBUG는 제외)
+    level=logging.INFO,  # INFO 이상 레벨만 출력 (DEBUG는 제외)
     format="%(asctime)s %(levelname)s %(name)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
@@ -105,10 +105,10 @@ async def lifespan(app: FastAPI):
           await database.disconnect()
     """
     # ── 앱 시작 시 ────────────────────────────────────────────────────
-    _seed_sample_data()                         # 실습용 샘플 데이터 생성
+    _seed_sample_data()  # 실습용 샘플 데이터 생성
     logger.info("정산 시스템 기동 완료")
 
-    yield   # ← 여기서 실제 서버가 요청을 받기 시작합니다
+    yield  # ← 여기서 실제 서버가 요청을 받기 시작합니다
 
     # ── 앱 종료 시 ────────────────────────────────────────────────────
     logger.info("정산 시스템 종료")
@@ -138,7 +138,7 @@ def _seed_sample_data():
             order = Order(
                 order_id=f"ORD-{uuid.uuid4().hex[:6].upper()}",
                 merchant_id=merchant,
-                customer_id=f"C-{i+1:03d}",   # C-001, C-002, ... C-005
+                customer_id=f"C-{i+1:03d}",  # C-001, C-002, ... C-005
                 # m_idx+1: 판매자별로 금액 배율 다르게 (M-001=1배, M-002=2배)
                 amount=Decimal(str(10_000 * (i + 1) * (m_idx + 1))),
             )
@@ -169,7 +169,7 @@ app = FastAPI(
 Docker 이미지로 빌드되어 kind 클러스터에 자동 배포됩니다.
 """,
     version="1.0.0",
-    lifespan=lifespan,          # 위에서 정의한 생명주기 함수 연결
+    lifespan=lifespan,  # 위에서 정의한 생명주기 함수 연결
 )
 
 
@@ -182,15 +182,16 @@ Docker 이미지로 빌드되어 kind 클러스터에 자동 배포됩니다.
 # 실무에서는 ["https://yourdomain.com"] 처럼 특정 도메인만 허용
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],        # 모든 도메인 허용
-    allow_methods=["*"],        # 모든 HTTP 메서드 허용 (GET, POST, PUT 등)
-    allow_headers=["*"],        # 모든 헤더 허용
+    allow_origins=["*"],  # 모든 도메인 허용
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용 (GET, POST, PUT 등)
+    allow_headers=["*"],  # 모든 헤더 허용
 )
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 시스템 엔드포인트 (쿠버네티스 연동)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 
 @app.get(
     "/health",
@@ -257,10 +258,11 @@ async def ready():
 # 주문 API
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+
 @app.post(
     "/api/v1/orders",
-    response_model=Order,       # 반환 타입: Order 모델 (Swagger에 자동 표시)
-    status_code=201,            # 201 Created: 리소스 생성 성공 시 표준 코드
+    response_model=Order,  # 반환 타입: Order 모델 (Swagger에 자동 표시)
+    status_code=201,  # 201 Created: 리소스 생성 성공 시 표준 코드
     tags=["주문"],
     summary="주문 생성",
 )
@@ -331,7 +333,7 @@ async def complete_order(order_id: str):
 
 @app.get(
     "/api/v1/orders",
-    response_model=List[Order],     # 반환 타입: Order 목록
+    response_model=List[Order],  # 반환 타입: Order 목록
     tags=["주문"],
     summary="주문 목록 조회",
 )
@@ -342,7 +344,7 @@ async def list_orders(
             description="판매자 ID 필터",  # Swagger에 표시될 설명
             example="M-001",  # Swagger 예시 값
         ),
-    ] = None,                            # 기본값 None → 파라미터 없으면 전체 조회
+    ] = None,  # 기본값 None → 파라미터 없으면 전체 조회
 ):
     """
     주문 목록을 조회합니다. 판매자 ID로 필터링 가능합니다.
@@ -364,6 +366,7 @@ async def list_orders(
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 정산 API
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 
 @app.post(
     "/api/v1/settlements",

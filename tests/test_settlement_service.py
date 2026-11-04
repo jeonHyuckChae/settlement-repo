@@ -26,9 +26,7 @@ def test_list_settlements_filters_by_merchant_and_status(service, period):
     service.process_settlement(other_completed.settlement_id)
     service.calculate_settlement("M-002", *period)
 
-    result = service.list_settlements(
-        merchant_id="M-001", status=SettlementStatus.COMPLETED
-    )
+    result = service.list_settlements(merchant_id="M-001", status=SettlementStatus.COMPLETED)
 
     assert [record.settlement_id for record in result] == [expected.settlement_id]
 
